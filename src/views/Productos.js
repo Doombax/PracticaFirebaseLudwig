@@ -15,6 +15,16 @@ import * as FileSystem from "expo-file-system/legacy";
 import * as Sharing from "expo-sharing";
 import * as Clipboard from "expo-clipboard";
 
+// 🔧 Función auxiliar para convertir ArrayBuffer a base64
+const arrayBufferToBase64 = (buffer) => {
+  let binary = '';
+  const bytes = new Uint8Array(buffer);
+  for (const byte of bytes) {
+    binary += String.fromCharCode(byte);
+  }
+  return btoa(binary);
+};
+
 const Productos = () => {
   const [nuevoProducto, setNuevoProducto] = useState({
     nombre: "",
@@ -125,7 +135,8 @@ const Productos = () => {
     setModEdicion(true);
   };
 
-  const exportarTodoFirestore = async () => {
+  // ✅ Exportar todas las colecciones como .txt
+  const exportarTodoFirestoreComoTxt = async () => {
     try {
       const colecciones = ["productos", "clientes", "empleados", "ciudades"];
       let textoFinal = "";
@@ -150,7 +161,7 @@ const Productos = () => {
       }
 
       await Clipboard.setStringAsync(textoFinal);
-      console.log("Todos los datos copiados al portapapeles.");
+      console.log("Datos copiados al portapapeles.");
 
       const fileUri = FileSystem.cacheDirectory + "todoFirestore.txt";
       await FileSystem.writeAsStringAsync(fileUri, textoFinal, {
@@ -161,13 +172,65 @@ const Productos = () => {
       if (isAvailable) {
         await Sharing.shareAsync(fileUri, {
           mimeType: "text/plain",
-          dialogTitle: "Compartir datos de Firestore",
+          dialogTitle: "Compartir datos Firestore (.txt)",
         });
       } else {
-        Alert.alert("Compartir no disponible en este dispositivo.");
+        Alert.alert("Compartir no disponible.");
       }
+
+      Alert.alert("Archivo .txt generado y listo para compartir.");
     } catch (error) {
       console.error("Error al exportar todas las colecciones:", error);
+      Alert.alert("Error: " + error.message);
+    }
+  };
+
+  // ✅ Generar Excel desde la colección "ciudades"
+  const generarExcelCiudades = async () => {
+    try {
+      const snapshot = await getDocs(collection(db, "ciudades"));
+      const ciudades = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+
+      if (!ciudades || ciudades.length === 0) {
+        throw new Error("No hay datos en la colección 'ciudades'");
+      }
+
+      const response = await fetch("https://v15dwab3ve.execute-api.us-east-1.amazonaws.com/generarexcel", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ datos: ciudades }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error HTTP: ${response.status}`);
+      }
+
+      const arrayBuffer = await response.arrayBuffer();
+      const base64 = arrayBufferToBase64(arrayBuffer);
+      const fileUri = FileSystem.documentDirectory + "reporte_ciudades.xlsx";
+
+      await FileSystem.writeAsStringAsync(fileUri, base64, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+
+      await Clipboard.setStringAsync("Excel generado con datos de ciudades.");
+
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(fileUri, {
+          mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          dialogTitle: "Descargar Reporte de Ciudades",
+        });
+      } else {
+        Alert.alert("Compartir no disponible.");
+      }
+
+      Alert.alert("Excel generado y listo para compartir.");
+    } catch (error) {
+      console.error("Error generando Excel:", error);
+      Alert.alert("Error: " + error.message);
     }
   };
 
@@ -190,7 +253,10 @@ const Productos = () => {
         editarProducto={editarProducto}
       />
       <View style={{ marginVertical: 10 }}>
-        <Button title="Exportar TODO (.txt)" onPress={exportarTodoFirestore} />
+        <Button title="Exportar TODO (.txt)" onPress={exportarTodoFirestoreComoTxt} />
+      </View>
+      <View style={{ marginVertical: 10 }}>
+        <Button title="Generar Excel de Ciudades" onPress={generarExcelCiudades} />
       </View>
     </View>
   );
