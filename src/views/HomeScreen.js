@@ -46,6 +46,19 @@ export default function HomeScreen({ navigation, onLogout }) {
         <Text style={styles.navButtonText}>Ir a Empleados</Text>
       </TouchableOpacity>
 
+      <TouchableOpacity style={styles.navButton} onPress={() => navigation.navigate('Ciudades')}>
+        <Text style={styles.navButtonText}>Ir a Ciudades</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={styles.navButton} onPress={() => navigation.navigate('Realtime')}>
+        <Text style={styles.navButtonText}>Ir a ProductosRealtime</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={styles.navButton} onPress={() => navigation.navigate('IMC')}>
+        <Text style={styles.navButtonText}>Ir a FormularioIMC</Text>
+      </TouchableOpacity>
+
+
       <View style={{ marginTop: 30 }}>
         <Button title="Cerrar sesión" color="#d9534f" onPress={cerrarSesion} />
       </View>

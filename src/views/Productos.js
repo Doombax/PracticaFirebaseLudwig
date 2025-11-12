@@ -15,7 +15,7 @@ import * as FileSystem from "expo-file-system/legacy";
 import * as Sharing from "expo-sharing";
 import * as Clipboard from "expo-clipboard";
 
-// 🔧 Función auxiliar para convertir ArrayBuffer a base64
+// 🔧 Convertir ArrayBuffer a base64
 const arrayBufferToBase64 = (buffer) => {
   let binary = '';
   const bytes = new Uint8Array(buffer);
@@ -185,23 +185,27 @@ const Productos = () => {
     }
   };
 
-  // ✅ Generar Excel desde la colección "ciudades"
-  const generarExcelCiudades = async () => {
+  // ✅ Generar Excel con campos específicos de productos
+  const generarExcelProductos = async () => {
     try {
-      const snapshot = await getDocs(collection(db, "ciudades"));
-      const ciudades = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
+      const snapshot = await getDocs(collection(db, "productos"));
+      const productos = snapshot.docs.map((doc) => {
+        const data = doc.data();
+        return {
+          nombre: typeof data.nombre === "string" ? data.nombre : "",
+          precio: typeof data.precio === "number" ? data.precio : "",
+          descripcion: typeof data.descripcion === "string" ? data.descripcion : "",
+        };
+      });
 
-      if (!ciudades || ciudades.length === 0) {
-        throw new Error("No hay datos en la colección 'ciudades'");
+      if (!productos || productos.length === 0) {
+        throw new Error("No hay datos en la colección 'productos'");
       }
 
-      const response = await fetch("https://v15dwab3ve.execute-api.us-east-1.amazonaws.com/generarexcel", {
+      const response = await fetch("https://hk3ic9ldi0.execute-api.us-east-2.amazonaws.com/generarexcel", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ datos: ciudades }),
+        body: JSON.stringify({ datos: productos }),
       });
 
       if (!response.ok) {
@@ -210,24 +214,22 @@ const Productos = () => {
 
       const arrayBuffer = await response.arrayBuffer();
       const base64 = arrayBufferToBase64(arrayBuffer);
-      const fileUri = FileSystem.documentDirectory + "reporte_ciudades.xlsx";
+      const fileUri = FileSystem.documentDirectory + "reporte_productos.xlsx";
 
       await FileSystem.writeAsStringAsync(fileUri, base64, {
         encoding: FileSystem.EncodingType.Base64,
       });
 
-      await Clipboard.setStringAsync("Excel generado con datos de ciudades.");
-
       if (await Sharing.isAvailableAsync()) {
         await Sharing.shareAsync(fileUri, {
           mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-          dialogTitle: "Descargar Reporte de Ciudades",
+          dialogTitle: "Descargar Reporte de Productos",
         });
       } else {
         Alert.alert("Compartir no disponible.");
       }
 
-      Alert.alert("Excel generado y listo para compartir.");
+      Alert.alert("Excel de productos generado y listo para compartir.");
     } catch (error) {
       console.error("Error generando Excel:", error);
       Alert.alert("Error: " + error.message);
@@ -256,7 +258,7 @@ const Productos = () => {
         <Button title="Exportar TODO (.txt)" onPress={exportarTodoFirestoreComoTxt} />
       </View>
       <View style={{ marginVertical: 10 }}>
-        <Button title="Generar Excel de Ciudades" onPress={generarExcelCiudades} />
+        <Button title="Generar Excel de Productos" onPress={generarExcelProductos} />
       </View>
     </View>
   );

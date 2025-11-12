@@ -7,6 +7,9 @@ import Productos from './Productos';
 import Clientes from './Clientes';
 import Promedio from './Promedio';
 import Empleados from './Empleado';
+import Ciudades from './ciudades';
+import ProductosRealtime from './ProductosRealtime';
+import FormularioIMC from './FormularioIMC';
 
 const Stack = createStackNavigator();
 
@@ -20,6 +23,9 @@ export default function Navegacion() {
         <Stack.Screen name="Clientes" component={Clientes} options={{ title: 'Clientes' }} />
         <Stack.Screen name="Promedio" component={Promedio} options={{ title: 'Promedio' }} />
         <Stack.Screen name="Empleados" component={Empleados} options={{ title: 'Empleados' }} />
+        <Stack.Screen name="Ciudades" component={Ciudades} options={{ title: 'Ciudades' }} />
+        <Stack.Screen name="Realtime" component={ProductosRealtime} options={{ title: 'Realtime' }} />   
+        <Stack.Screen name="IMC" component={FormularioIMC} options={{ title: 'IMC' }} />   
       </Stack.Navigator>
     </NavigationContainer>
   );

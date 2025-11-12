@@ -1,4 +1,3 @@
-// src/views/Ciudades.js
 import React, { useEffect } from 'react';
 import { View, Text, Button } from 'react-native';
 import { collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
@@ -11,18 +10,18 @@ const Ciudades = () => {
 
   const ejecutarConsultas = async () => {
     console.clear();
-    console.log('INICIANDO 8 CONSULTAS FIRESTORE...\n');
+    console.log('INICIANDO CONSULTAS FIRESTORE...\n');
 
-    await pruebaConsulta1();
-    await pruebaConsulta2(); // 🔧 Requiere índice compuesto
-    await pruebaConsulta3();
-    await pruebaConsulta4();
-    await pruebaConsulta5();
-    await pruebaConsulta6();
-    await pruebaConsulta7(); // 🔧 Requiere índice compuesto
-    await pruebaConsulta8(); // ⚠️ Múltiple orderBy, requiere índice
+    await consulta1();
+    await consulta2();
+    await consulta3();
+    await consulta4();
+    await consulta5();
+    await consulta6();
+    await consulta7();
+    await consulta8();
 
-    console.log('\nTODAS LAS CONSULTAS COMPLETADAS');
+    console.log('\nCONSULTAS COMPLETADAS');
   };
 
   const imprimirResultados = (snapshot, titulo) => {
@@ -34,7 +33,7 @@ const Ciudades = () => {
     });
   };
 
-  const pruebaConsulta1 = async () => {
+  const consulta1 = async () => {
     try {
       const q = query(
         collection(db, "ciudades"),
@@ -49,68 +48,63 @@ const Ciudades = () => {
     }
   };
 
-  const pruebaConsulta2 = async () => {
+  const consulta2 = async () => {
     try {
       const q = query(
         collection(db, "ciudades"),
         where("pais", "==", "Honduras"),
-        where("poblacion", ">", 700),
-        orderBy("nombre", "asc"),
         limit(3)
       );
       const snapshot = await getDocs(q);
-      imprimirResultados(snapshot, "2. Honduras >700k (nombre asc)");
+      imprimirResultados(snapshot, "2. Honduras (limit 3)");
     } catch (e) {
       console.error("Error 2:", e.message);
     }
   };
 
-  const pruebaConsulta3 = async () => {
+  const consulta3 = async () => {
     try {
       const q = query(
         collection(db, "ciudades"),
         where("pais", "==", "El Salvador"),
-        orderBy("poblacion", "asc"),
         limit(2)
       );
       const snapshot = await getDocs(q);
-      imprimirResultados(snapshot, "3. El Salvador (población asc)");
+      imprimirResultados(snapshot, "3. El Salvador (limit 2)");
     } catch (e) {
       console.error("Error 3:", e.message);
     }
   };
 
-  const pruebaConsulta4 = async () => {
+  const consulta4 = async () => {
     try {
       const q = query(
         collection(db, "ciudades"),
         where("poblacion", "<=", 300),
-        orderBy("pais", "desc"),
         limit(4)
       );
       const snapshot = await getDocs(q);
-      imprimirResultados(snapshot, "4. ≤300k (país desc)");
+      imprimirResultados(snapshot, "4. ≤300k (limit 4)");
     } catch (e) {
       console.error("Error 4:", e.message);
     }
   };
 
-  const pruebaConsulta5 = async () => {
+  const consulta5 = async () => {
     try {
       const q = query(
         collection(db, "ciudades"),
         where("poblacion", ">", 900),
-        orderBy("nombre"),
         limit(3)
       );
       const snapshot = await getDocs(q);
-      imprimirResultados(snapshot, "5. >900k (orden nombre)");
+      imprimirResultados(snapshot, "5. >900k (limit 3)");
     } catch (e) {
       console.error("Error 5:", e.message);
     }
   };
 
-  const pruebaConsulta6 = async () => {
+  const consulta6 = async () => {
     try {
       const q = query(
         collection(db, "ciudades"),
@@ -125,32 +119,29 @@ const Ciudades = () => {
     }
   };
 
-  const pruebaConsulta7 = async () => {
+  const consulta7 = async () => {
     try {
       const q = query(
         collection(db, "ciudades"),
         where("poblacion", ">=", 200),
-        where("poblacion", "<=", 600),
-        orderBy("pais", "asc"),
         limit(5)
       );
       const snapshot = await getDocs(q);
-      imprimirResultados(snapshot, "7. 200k-600k (país asc)");
+      imprimirResultados(snapshot, "7. ≥200k (limit 5)");
     } catch (e) {
       console.error("Error 7:", e.message);
     }
   };
 
-  const pruebaConsulta8 = async () => {
+  const consulta8 = async () => {
     try {
       const q = query(
         collection(db, "ciudades"),
         orderBy("poblacion", "desc"),
-        orderBy("region", "desc"), // ⚠️ Firestore solo permite múltiples orderBy si hay índice compuesto
         limit(5)
       );
       const snapshot = await getDocs(q);
-      imprimirResultados(snapshot, "8. Top 5 población (región desc)");
+      imprimirResultados(snapshot, "8. Top 5 por población");
     } catch (e) {
       console.error("Error 8:", e.message);
     }
